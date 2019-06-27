@@ -1,0 +1,133 @@
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends "bootstrap/base.html" %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block head %}
+{{ super() }}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Document</title>
+</head>
+{% endblock %}
+{% block content %}
+<body>
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{message}}
+    </div>
+{% endfor %}
+
+    <div class="col-md-6">
+    <h2>Flights</h2>
+    {{wtf.quick_form(flightform)}}
+    <div style="overflow-x:auto;">
+    <table> 
+        <tr>
+            <th>ID</th>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>Seats</th>
+            <th>List of tourists</th>
+            <th>Ticket price</th>
+            <th>Remove flight</th>
+            <th>Add tourists</th>
+            <th>Delete tourists</th>
+        </tr>
+        <br>
+        {%for flight in airtraffic%} 
+            <tr>
+                <td>{{flight.id}}</td>
+                <td>{{flight.departure.strftime('%d.%m.%Y %H:%M')}}</td>
+                <td>{{flight.arrival.strftime('%d.%m.%Y %H:%M')}}</td>
+                <td>{{flight.seats}}</td>
+                <td>{{flight.tourists.all()|join(', ')}}</td>
+                <td>{{'%0.2f' % flight.price}}</td>
+                <td><button type="submit" onclick="window.location='/remove/flight/{{flight.id}}';">X</button></td>
+                <td>
+                    <form action="/add/tourist/{{flight.id}}" method="POST">
+                    <select name="tourists">
+                        {%for f in tlist%}
+                        <option value="{{f.id}}" name="fid">{{f.fstname[0]}} {{f.lstname}}</option>
+                        {%endfor%}
+                    </select>
+                    <input type="submit" value="Send">
+                    </form>
+                </td>
+                <td>
+                    <form action="/delete/tourist/{{flight.id}}" method="POST">
+                    <select name="tourists">
+                        {%for f in flight.tourists.all()%}
+                        <option value="{{f.id}}" name="fid">{{f.fstname[0]}} {{f.lstname}}</option>
+                        {%endfor%}
+                    </select>
+                    <input type="submit" value="Send">
+                    </form>
+                </td>
+            </tr>
+        {%endfor%} 
+    </table>
+    </div>
+    </div>
+    <div class="col-md-6">
+        <h2>Tourists</h2>
+        {{wtf.quick_form(tform)}}
+        <div style="overflow-x:auto;">
+        <table> 
+            <tr>
+                <th>ID</th>
+                <th>First name</th>
+                <th>Last name</th>
+                <th>Gender</th>
+                <th>Country</th>
+                <th>Remarks</th>
+                <th>Date of birth</th>
+                <th>List of flights</th>
+                <th>Remove tourist</th>
+                <th>Add flights</th>
+                <th>Delete flights</th>
+            </tr>
+            <br>
+            {%for t in tlist%} 
+                <tr>
+                    <td>{{t.id}}</td>
+                    <td>{{t.fstname}}</td>
+                    <td>{{t.lstname}}</td>
+                    <td>{{t.gender}}</td>
+                    <td>{{t.country}}</td>
+                    <td>{{t.remarks}}</td>
+                    <td>{{t.birth.strftime('%d.%m.%Y')}}</td>
+                    <td>{{t.lflights.all()|join(', ')}}</td>
+                    <td><button type="submit" onclick="window.location='/remove/tourist/{{t.id}}';">X</button></td>
+                    <td>
+                        <form action="/add/flight/{{t.id}}" method="POST">
+                        <select name="flights">
+                            {%for f in airtraffic%}
+                            <option value="{{f.id}}" name="fid">{{f.id}}</option>
+                            {%endfor%}
+                        </select>
+                        <input type="submit" value="Send">
+                        </form>
+                    </td>
+                    <td>
+                        <form action="/delete/flight/{{t.id}}" method="POST">
+                        <select name="flights">
+                            {%for f in t.lflights.all()%}
+                            <option value="{{f.id}}" name="fid">{{f.id}}</option>
+                            {%endfor%}
+                        </select>
+                        <input type="submit" value="Send">
+                        </form>
+                    </td>
+                </tr>
+            {%endfor%} 
+        </table>
+        </div>
+    </div>
+</body>
+{% endblock %}
+</html>
